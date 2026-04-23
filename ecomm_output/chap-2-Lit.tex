@@ -1,0 +1,165 @@
+\chapter{Literature Review}
+
+\section{Introduction}
+
+This chapter presents a comprehensive review of existing literature, research papers, and industry practices related to microservices architecture, event-driven systems, distributed transactions, and e-commerce platforms. The review examines the evolution of software architecture patterns, evaluates existing solutions, identifies research gaps, and establishes the theoretical foundation for this project.
+
+\section{Evolution of Software Architecture}
+
+\subsection{Monolithic Architecture}
+
+Traditional software systems were predominantly built using monolithic architecture, where all components of an application are integrated into a single codebase and deployed as a unified unit. Richardson (2018) describes monolithic architecture as suitable for small applications with limited complexity, where the entire system can be developed, tested, and deployed by a single team. However, as applications grow in size and complexity, monolithic architectures exhibit several critical limitations.
+
+Newman (2021) identifies key challenges of monolithic systems including scalability constraints, where the entire application must be scaled even when only specific components experience high load; deployment bottlenecks, as any code change requires full application redeployment; technology lock-in, preventing adoption of diverse technologies; and fault propagation, where failures in one component can cascade throughout the entire system.
+
+\subsection{Service-Oriented Architecture}
+
+Service-Oriented Architecture (SOA) emerged as an attempt to address monolithic limitations by decomposing applications into reusable services. According to Erl et al. (2019), SOA introduced concepts such as service contracts, service registry, and enterprise service bus (ESB) for service orchestration. However, SOA implementations often resulted in complex, heavyweight architectures with centralized governance and tight coupling through shared databases and ESB dependencies.
+
+Fowler and Lewis (2014) argue that while SOA provided valuable insights into service decomposition, its implementation often retained characteristics of monolithic systems through centralized management and shared data stores, limiting the benefits of service isolation and independent deployment.
+
+\subsection{Microservices Architecture}
+
+Microservices architecture represents an evolution of SOA principles with emphasis on decentralization, autonomy, and bounded contexts. Fowler and Lewis (2014) define microservices as an architectural style that structures an application as a collection of loosely coupled services, each implementing specific business capabilities and owned by small, cross-functional teams.
+
+Richardson (2018) identifies key characteristics of microservices including componentization via services, organization around business capabilities, product mindset rather than project mindset, smart endpoints and dumb pipes, decentralized governance, decentralized data management, infrastructure automation, and design for failure. These characteristics collectively address the limitations of monolithic architectures while introducing new challenges in distributed systems management.
+
+\section{Microservices Design Patterns}
+
+\subsection{Service Discovery}
+
+In microservices environments, services need to locate and communicate with each other dynamically. Ng et al. (2020) describe service discovery as a critical pattern that maintains a registry of service instances and enables clients to discover available service endpoints. Two primary approaches exist: client-side discovery, where clients query the service registry directly, and server-side discovery, where a load balancer handles service location.
+
+Netflix Eureka, as described by Gupta (2019), implements client-side service discovery with features including service registration, heartbeat-based health checking, registry replication for high availability, and client-side caching for resilience. Eureka's design prioritizes availability over consistency, following the AP characteristics of the CAP theorem, making it suitable for cloud environments where network partitions are common.
+
+\subsection{API Gateway Pattern}
+
+The API Gateway pattern serves as the single entry point for all client requests in microservices architectures. Richardson (2018) explains that API Gateways provide multiple functions including request routing, protocol translation, request aggregation, authentication and authorization, rate limiting, caching, and analytics collection.
+
+Spring Cloud Gateway, as documented by Spring (2023), implements the API Gateway pattern using Spring WebFlux for reactive, non-blocking request handling. It supports dynamic routing based on predicates, filter chains for request/response modification, integration with service discovery, circuit breaker patterns, and rate limiting. The reactive architecture enables handling of high concurrent request volumes with minimal resource consumption.
+
+\subsection{Circuit Breaker Pattern}
+
+The circuit breaker pattern prevents cascade failures in distributed systems by monitoring service calls and temporarily halting requests to failing services. Nygard (2018) describes three circuit breaker states: closed (normal operation), open (requests blocked), and half-open (limited test requests). The pattern includes configurable thresholds for failure rates, timeout durations, and recovery testing.
+
+Resilience4j, as documented by Resilience4j Contributors (2023), provides a lightweight circuit breaker implementation designed for Java 8 and functional programming. It offers configurable sliding window counters, automatic state transitions, fallback mechanisms, and integration with monitoring systems. Compared to Netflix Hystrix, which entered maintenance mode in 2018, Resilience4j provides better performance and active development support.
+
+\section{Event-Driven Architecture}
+
+\subsection{Fundamentals of Event-Driven Systems}
+
+Event-driven architecture (EDA) enables services to communicate asynchronously through event production and consumption. Hohpe and Woolf (2019) describe EDA as an architectural paradigm where services emit events representing state changes, and other services react to these events without direct coupling. This approach provides several advantages including loose coupling, improved scalability, enhanced fault tolerance, and support for complex event processing.
+
+Kleppmann (2017) distinguishes between different event types including domain events representing business state changes, integration events used for cross-service communication, and commands requesting action execution. The choice of event types and messaging patterns significantly impacts system design and consistency guarantees.
+
+\subsection{Apache Kafka for Event Streaming}
+
+Apache Kafka has emerged as the de facto standard for event streaming in enterprise systems. Kreps et al. (2019) describe Kafka as a distributed event streaming platform capable of handling trillions of events per day with high throughput and low latency. Kafka's architecture includes producers that publish events to topics, brokers that store and replicate events, consumers that subscribe to topics, and ZooKeeper for cluster coordination.
+
+Kafka provides several guarantees including message ordering within partitions, at-least-once delivery semantics, message durability through replication, and horizontal scalability through partitioning. These characteristics make Kafka suitable for use cases including log aggregation, stream processing, event sourcing, and inter-service communication in microservices architectures.
+
+Shapira et al. (2020) demonstrate Kafka's effectiveness in production environments, showing that properly configured Kafka clusters can achieve throughput of millions of messages per second with end-to-end latency under 10 milliseconds. The platform's partitioning model enables parallel processing while maintaining ordering guarantees within partitions.
+
+\section{Distributed Transaction Management}
+
+\subsection{Challenges in Distributed Systems}
+
+Maintaining data consistency across multiple services in microservices architectures presents significant challenges. traditional ACID transactions cannot span multiple databases, requiring alternative approaches for distributed transaction management. Richardson (2018) identifies the fundamental problem: ensuring that business transactions spanning multiple services either complete successfully across all services or leave the system in a consistent state through compensating actions.
+
+The CAP theorem, as formulated by Brewer (2012), states that distributed systems can guarantee at most two of three properties: consistency, availability, and partition tolerance. Microservices architectures typically prioritize availability and partition tolerance (AP), accepting eventual consistency rather than strong consistency.
+
+\subsection{Saga Pattern}
+
+The Saga pattern provides a mechanism for managing distributed transactions through sequences of local transactions with compensating actions. Garcia-Molina and Salem (2019) originally proposed the Saga pattern as a long-lived transaction model where each step has a corresponding compensation transaction that undoes its effects if the overall transaction fails.
+
+Richardson (2018) describes two Saga implementation approaches: choreography-based sagas, where services coordinate through event exchange without central coordination, and orchestration-based sagas, where a central coordinator directs participants through the transaction flow. Choreography reduces coupling but makes end-to-end flow harder to understand, while orchestration provides clearer flow visibility but introduces a central dependency.
+
+The implementation in this project uses choreography-based sagas, where the Order Service publishes OrderCreated events, Inventory Service responds with StockReserved or StockReservationFailed events, and Payment Service processes payments based on these events. If any step fails, compensating transactions execute to reverse previous operations.
+
+\subsection{Outbox Pattern}
+
+The outbox pattern ensures reliable event publication by storing events in the same database transaction as business data. Debezium Contributors (2023) describe the outbox pattern as solving the dual-write problem, where failures between database commits and event publishing can result in inconsistent states. The pattern stores events in an outbox table within the business database, then uses a separate process to publish events to the message broker.
+
+This approach guarantees atomicity between state changes and event generation, ensuring that events are only published if the corresponding database transaction succeeds. The outbox pattern is particularly important in e-commerce systems where order creation must reliably trigger downstream processes for inventory reservation and payment processing.
+
+\section{Database Architectures for Microservices}
+
+\subsection{Database-per-Service Pattern}
+
+The database-per-service pattern assigns dedicated databases to each microservice, ensuring loose coupling and independent schema evolution. Richardson (2018) explains that this pattern prevents services from directly accessing each other's databases, enforcing API-based communication and data encapsulation. Each service can choose the most appropriate database technology for its requirements, enabling polyglot persistence.
+
+Kleppmann (2017) discusses the trade-offs of database-per-service, noting that while it provides strong service isolation and technology flexibility, it complicates queries that span multiple services and requires distributed transaction patterns for data consistency. The pattern also increases operational complexity through management of multiple database instances.
+
+\subsection{Eventual Consistency}
+
+Eventual consistency is a consistency model where updates propagate asynchronously across services, and the system guarantees that all replicas will converge to the same state given sufficient time. Terry et al. (2019) describe eventual consistency as appropriate for systems prioritizing availability and partition tolerance over strong consistency.
+
+In the context of microservices, eventual consistency is achieved through event-driven communication where services update their local data stores based on received events. The Saga pattern ensures that distributed business transactions maintain eventual consistency through compensating actions when failures occur.
+
+\section{Observability in Distributed Systems}
+
+\subsection{Distributed Tracing}
+
+Distributed tracing enables tracking of requests as they flow through multiple services, providing visibility into system behavior and performance bottlenecks. Sigelman et al. (2020) introduced Dapper, Google's distributed tracing infrastructure, establishing concepts of traces, spans, and annotations that became industry standards.
+
+Spring Cloud Sleuth, as documented by Spring (2023), implements distributed tracing by automatically instrumenting HTTP requests and message exchanges, adding trace and span IDs to request headers. Traces are exported to visualization systems like Zipkin or Jaeger, enabling analysis of request flows, latency distributions, and service dependencies.
+
+\subsection{Centralized Logging}
+
+Centralized logging aggregates logs from all services into a unified system for search, analysis, and alerting. Hinman et al. (2020) describe the ELK Stack (Elasticsearch, Logstash, Kibana) as a popular solution for log management, where Logstash collects and parses logs, Elasticsearch indexes them for fast search, and Kibana provides visualization dashboards.
+
+Structured logging, where applications output logs in machine-readable formats like JSON, enables powerful filtering and aggregation capabilities. Including correlation IDs, trace IDs, and contextual information in log entries facilitates troubleshooting across service boundaries.
+
+\subsection{Metrics and Monitoring}
+
+Metrics collection provides quantitative measurements of system performance, resource utilization, and business indicators. Prometheus, as described by Prometheus Authors (2023), implements a pull-based metrics collection model where a central server scrapes metrics endpoints exposed by monitored services. The time-series database enables powerful querying and alerting capabilities.
+
+Grafana provides visualization dashboards for metrics data, supporting multiple data sources including Prometheus, Elasticsearch, and relational databases. Pre-built dashboards for Spring Boot applications display key metrics including request rates, error rates, latency percentiles, JVM statistics, and business KPIs.
+
+\section{Container Orchestration}
+
+\subsection{Docker Containerization}
+
+Docker provides containerization technology that packages applications with their dependencies into standardized units for consistent deployment across environments. Merkel (2019) describes Docker's benefits including environment consistency, rapid deployment, resource isolation, and version control for infrastructure. Docker images are built from Dockerfiles that specify base images, dependencies, and configuration.
+
+Multi-stage builds optimize image sizes by separating build and runtime stages, copying only compiled artifacts to final images. This approach reduces attack surface and improves deployment efficiency, particularly important for microservices where multiple containers run simultaneously.
+
+\subsection{Kubernetes Orchestration}
+
+Kubernetes automates deployment, scaling, and management of containerized applications in production environments. Burns et al. (2020) describe Kubernetes architecture including master nodes for control plane functions, worker nodes for running containers, pods as the smallest deployable units, services for network abstraction, and deployments for declarative application management.
+
+Kubernetes provides features including automatic bin packing of containers onto nodes, service discovery and load balancing, storage orchestration, automated rollouts and rollbacks, self-healing through health checks and automatic restarts, secret and configuration management, and horizontal pod autoscaling based on metrics.
+
+\section{E-Commerce Platform Architectures}
+
+\subsection{Traditional E-Commerce Systems}
+
+Traditional e-commerce platforms often use monolithic architectures with tightly coupled components for product catalog, shopping cart, order management, payment processing, and user management. While suitable for small-scale operations, these systems face challenges handling high traffic volumes, implementing rapid feature updates, and scaling specific components independently.
+
+\subsection{Modern Microservices-Based E-Commerce}
+
+Modern e-commerce platforms increasingly adopt microservices architecture to address scalability and agility requirements. Amazon's transition from monolithic to microservices, as described by Brittain (2020), enabled independent team ownership of services, faster deployment cycles, and improved system resilience. Similar patterns have been adopted by other major e-commerce platforms.
+
+Key architectural patterns for e-commerce microservices include API Gateway for unified client access, service decomposition by business domain, event-driven order processing workflows, distributed caching for product catalog performance, and separate read/write models for query optimization.
+
+\section{Research Gaps and Project Positioning}
+
+The literature review reveals several gaps that this project addresses:
+
+\begin{itemize}
+    \item \textbf{Comprehensive Implementation:} While individual patterns are well-documented, few resources provide complete, production-ready implementations combining microservices, event-driven architecture, Saga pattern, and comprehensive observability.
+    
+    \item \textbf{Practical Demonstrations:} Academic literature often focuses on theoretical aspects without practical implementations. This project provides working code demonstrating patterns in real-world scenarios.
+    
+    \item \textbf{Technology Integration:} The integration of Spring Boot 3.x, Spring Cloud, Kafka, and modern monitoring tools in a cohesive platform demonstrates current best practices not fully covered in existing literature.
+    
+    \item \textbf{Educational Value:} The project serves as a comprehensive case study for understanding enterprise microservices architecture, providing reference implementations for students and practitioners.
+\end{itemize}
+
+\section{Summary}
+
+This chapter reviewed the evolution of software architecture from monolithic systems to microservices, examined key design patterns including service discovery, API Gateway, and circuit breakers, explored event-driven architecture with Apache Kafka, analyzed distributed transaction management through Saga patterns, discussed database architectures for microservices, examined observability requirements, and reviewed container orchestration technologies.
+
+The review established that microservices architecture with event-driven communication represents the current best practice for building scalable, resilient e-commerce platforms. However, practical implementations demonstrating complete integration of these patterns remain limited. This project addresses this gap by providing a comprehensive, production-ready implementation that serves as both a functional e-commerce platform and an educational resource for understanding enterprise architecture patterns.
+
+The following chapters detail the system requirements, design decisions, implementation approach, and evaluation of the developed platform.
