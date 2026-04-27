@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react()],
   // environment variables
   define: {
-      VITE_API_BASE_URL: JSON.stringify(process.env.VITE_API_BASE_URL || 'https://j-kart.bytexl.live')
+    VITE_API_BASE_URL: JSON.stringify(process.env.VITE_API_BASE_URL || 'https://j-kart.bytexl.live/api')
   },
 })
