@@ -11,7 +11,7 @@ function OrderService() {
     const navigate = useNavigate()
 
     const authHeader = () => {
-        return { Authorization: `${user?.type}${user?.token}` };
+        return { Authorization: `${user?.type} ${user?.token}` };
     }
 
     const placeOrder = async ({ fname, lname, address1, address2, city, phone }, cart) => {

@@ -1,0 +1,224 @@
+version: '3.8'
+
+services:
+  # Service Registry (Eureka)
+  service-registry:
+    build:
+      context: ./microservice-backend/service-registry
+      dockerfile: Dockerfile
+    container_name: service-registry
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./microservice-backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./microservice-backend/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "9030:9030"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=${MONGODB_AUTH_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9030/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # User Service
+  user-service:
+    build:
+      context: ./microservice-backend/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "9050:9050"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=${MONGODB_AUTH_URI}
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9050/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # Category Service
+  category-service:
+    build:
+      context: ./microservice-backend/category-service
+      dockerfile: Dockerfile
+    container_name: category-service
+    ports:
+      - "9000:9000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=${MONGODB_CATEGORY_URI}
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # Product Service
+  product-service:
+    build:
+      context: ./microservice-backend/product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    ports:
+      - "9010:9010"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=${MONGODB_PRODUCT_URI}
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9010/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # Cart Service
+  cart-service:
+    build:
+      context: ./microservice-backend/cart-service
+      dockerfile: Dockerfile
+    container_name: cart-service
+    ports:
+      - "9060:9060"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=${MONGODB_CART_URI}
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9060/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # Order Service
+  order-service:
+    build:
+      context: ./microservice-backend/order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "9070:9070"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=${MONGODB_ORDER_URI}
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9070/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./microservice-backend/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "9020:9020"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - jkart-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9020/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+networks:
+  jkart-network:
+    driver: bridge

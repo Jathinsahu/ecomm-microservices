@@ -9,9 +9,8 @@ function Hero() {
 
     return(
         <section className="hero-section" id='hero'>
-            <h1>Welcome to leading health and wellness retailer.</h1>
-
-            <h3>We believe in pure, natural goodness - plain and simple. We aim to partner with you on your unique wellness journey while honoring people and the planet in all that we do.</h3>
+            <h1>Upgrade Your Tech Lifestyle with JKart.</h1>
+            <h3>Discover the latest in innovation. From flagship smartphones to immersive gaming consoles, we bring the future to your doorstep with premium quality and unbeatable speed.</h3>
             <div>
                 <Link to='/products/All'><button>Shop now</button></Link>
                 

@@ -3,10 +3,7 @@ spring:
         name: order-service
     data:
         mongodb:
-            uri: 
-    jpa:
-        hibernate:
-            ddl-auto: update
+            uri: "mongodb+srv://jnexusadmin:jnexusadmin@cluster0.q6nnoki.mongodb.net/js_order_service?retryWrites=true&w=majority"
 
 server:
     port: 9070

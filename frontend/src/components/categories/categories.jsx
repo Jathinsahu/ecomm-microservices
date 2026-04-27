@@ -19,7 +19,7 @@ function Categories() {
 
     return (
         <section class="banner-container">
-            <h1>Browse wellness by categories</h1>
+            <h1>Explore Top Categories</h1>
 
             {isLoading && <Loading />}
 

@@ -1,0 +1,250 @@
+\chapter{System Requirements Specification}
+
+\section{Introduction}
+
+This chapter presents the system requirements for JKart, defining functional capabilities, non-functional quality attributes, and system constraints that guide the design and implementation.
+
+\section{Functional Requirements}
+
+\subsection{User Registration and Authentication}
+
+The Auth Service manages user identity and access control:
+
+\begin{itemize}
+    \item Users shall register by providing email, password, first name, and last name
+    \item System shall validate email format and check for duplicate accounts
+    \item Password must meet complexity requirements (minimum 8 characters, uppercase, lowercase, numbers, special characters)
+    \item System shall generate 6-digit OTP and send via email using Notification Service
+    \item User account created with \texttt{enabled = false} status until OTP verification
+    \item Users shall verify OTP within validity period to activate account
+    \item System shall set \texttt{enabled = true} upon successful OTP verification
+    \item Users shall login with email and password to receive JWT Bearer token
+    \item JWT tokens shall contain user ID, email, name, and roles with 24-hour expiration
+    \item Tokens signed using HMAC-SHA256 algorithm
+\end{itemize}
+
+\subsection{User Profile Management}
+
+The User Service provides user data to other services:
+
+\begin{itemize}
+    \item Authenticated users shall retrieve their profile information
+    \item Users shall update profile fields (name, phone number)
+    \item Users shall change password by providing current password for verification
+    \item System shall validate all inputs before persistence
+    \item User Service shares \texttt{js\_auth\_service} database with Auth Service
+\end{itemize}
+
+\subsection{Product Catalog Management}
+
+The Product and Category Services manage the e-commerce catalog:
+
+\begin{itemize}
+    \item Administrators (ROLE\_ADMIN) shall create products with name, description, price, category
+    \item System shall validate product name (non-empty, max 200 characters), price (positive decimal), category (valid selection)
+    \item Products shall be stored in \texttt{js\_product\_service} MongoDB database
+    \item Users shall browse paginated product listings (default 20 products per page)
+    \item Users shall search products by name, description, and category (case-insensitive)
+    \item Users shall filter products by category and price range
+    \item Administrators shall update product details including price and stock quantity
+    \item Administrators shall delete products using soft deletion (set active status to false)
+    \item Category Service shall manage product categories in \texttt{js\_category\_service} database
+\end{itemize}
+
+\subsection{Shopping Cart Operations}
+
+The Cart Service manages user shopping carts:
+
+\begin{itemize}
+    \item Authenticated users shall add products to cart with specified quantity
+    \item System shall validate user existence via User Service (Feign call)
+    \item System shall validate product existence and price via Product Service (Feign call)
+    \item Cart items shall be stored in \texttt{js\_cart\_service} database linked to userId
+    \item Users shall view cart items with product details and total price
+    \item Users shall update item quantities or remove items from cart
+    \item System shall calculate cart total dynamically based on current prices
+\end{itemize}
+
+\subsection{Order Processing}
+
+The Order Service handles order placement and tracking:
+
+\begin{itemize}
+    \item Authenticated users shall place orders by providing delivery address
+    \item System shall generate unique order record in \texttt{js\_order\_service} database
+    \item System shall fetch cart items from Cart Service via Feign call
+    \item System shall simulate successful payment (mock payment, no real gateway)
+    \item Order status shall be set to SUCCESS automatically upon placement
+    \item System shall send order confirmation email via Notification Service
+    \item System shall clear user's cart after successful order placement
+    \item Users shall view order history filtered by their user ID
+    \item Users shall track order status (PENDING, SUCCESS, DELIVERED)
+\end{itemize}
+
+\subsection{Email Notifications}
+
+The Notification Service sends transactional emails:
+
+\begin{itemize}
+    \item System shall send OTP verification emails during user registration
+    \item System shall send order confirmation emails with order details
+    \item Emails shall use SMTP configuration (Mailtrap for testing)
+    \item Email templates shall include branded JKart styling
+    \item Notification Service shall be called by Auth Service and Order Service via Feign
+\end{itemize}
+
+\section{Non-Functional Requirements}
+
+\subsection{Performance Requirements}
+
+\begin{itemize}
+    \item API response time shall be less than 500ms for simple read operations
+    \item Product search shall return results within 1 second
+    \item Order placement shall complete within 2 seconds
+    \item System shall support minimum 100 concurrent users
+    \item Frontend shall load initial page within 3 seconds on standard broadband
+\end{itemize}
+
+\subsection{Scalability Requirements}
+
+\begin{itemize}
+    \item Each microservice shall scale independently based on load
+    \item Kubernetes Horizontal Pod Autoscaler shall adjust replicas from 2 to 10
+    \item MongoDB connection pools shall scale with service replicas
+    \item System shall handle traffic spikes without service degradation
+\end{itemize}
+
+\subsection{Reliability Requirements}
+
+\begin{itemize}
+    \item System shall achieve 99.5\% uptime for user-facing endpoints
+    \item Services shall implement health check endpoints for Kubernetes probes
+    \item Failed service instances shall be automatically restarted by Kubernetes
+    \item Database connections shall use connection pooling with timeout handling
+\end{itemize}
+
+\subsection{Security Requirements}
+
+\begin{itemize}
+    \item All API endpoints (except login/register) shall require valid JWT token
+    \item Passwords shall be stored using BCrypt hashing
+    \item System shall implement role-based access control (ROLE\_USER, ROLE\_ADMIN)
+    \item Auth Service shall validate tokens via \texttt{/auth/isValidToken} endpoint
+    \item Each secured service shall implement AuthTokenFilter extending OncePerRequestFilter
+    \item Sessions shall be stateless (no server-side session storage)
+    \item CORS shall be configured to allow frontend origins
+\end{itemize}
+
+\subsection{Maintainability Requirements}
+
+\begin{itemize}
+    \item Code shall follow consistent package structure across all services
+    \item All services shall use Spring Boot 3.2.x with Maven build tool
+    \item Configuration shall be externalized in application.yml/properties files
+    \item Services shall expose Swagger UI for API documentation
+    \item Docker images shall use multi-stage builds for optimization
+\end{itemize}
+
+\section{System Constraints}
+
+\begin{itemize}
+    \item Java Version: JDK 21 for most services, JDK 17 for auth and notification services
+    \item Framework: Spring Boot 3.2.x with Spring Cloud
+    \item Database: MongoDB Atlas (one database per service)
+    \item Container Registry: Amazon ECR
+    \item Orchestration: Kubernetes on AWS EKS
+    \item Infrastructure: Terraform for AWS resource provisioning
+    \item CI/CD: GitHub Actions workflows
+    \item Frontend: React.js 18 with Vite build tool
+    \item Required ports must be available: 8761 (Eureka), 8080 (Gateway), 9000-9070 (services), 5173 (frontend)
+\end{itemize}
+
+\section{Use Case Specifications}
+
+\subsection{User Registration and Verification}
+
+\textbf{Actor:} New User\\
+\textbf{Precondition:} User has valid email address\\
+\textbf{Main Flow:}
+\begin{enumerate}
+    \item User navigates to registration page
+    \item User enters email, password, first name, last name
+    \item System validates inputs and creates user account (disabled)
+    \item System generates 6-digit OTP
+    \item Auth Service calls Notification Service to send OTP email
+    \item User receives OTP email
+    \item User enters OTP on verification page
+    \item System validates OTP and enables user account
+    \item User can now login with credentials
+\end{enumerate}
+
+\textbf{Alternative Flow:} Invalid OTP entered - system displays error and allows retry
+
+\subsection{Product Browsing and Search}
+
+\textbf{Actor:} Registered User\\
+\textbf{Precondition:} Products and categories exist in database\\
+\textbf{Main Flow:}
+\begin{enumerate}
+    \item User views homepage with product listings
+    \item User clicks category to filter products
+    \item System calls Product Service with category ID
+    \item System displays filtered products
+    \item User types search query in navbar
+    \item System calls Product Service search endpoint
+    \item System performs case-insensitive search across name, description, category
+    \item System displays matching products
+\end{enumerate}
+
+\subsection{Add to Cart}
+
+\textbf{Actor:} Registered User\\
+\textbf{Precondition:} User is authenticated, product exists\\
+\textbf{Main Flow:}
+\begin{enumerate}
+    \item User clicks "Add to Cart" on product
+    \item Frontend calls Cart Service \texttt{/cart/add}
+    \item Cart Service calls User Service to validate user (Feign)
+    \item Cart Service calls Product Service to validate product (Feign)
+    \item Cart Service saves item in \texttt{js\_cart\_service} database
+    \item System displays cart sidebar with updated items
+\end{enumerate}
+
+\textbf{Alternative Flow:} Product out of stock - system displays error message
+
+\subsection{Place Order}
+
+\textbf{Actor:} Registered User\\
+\textbf{Precondition:} User has items in cart, is authenticated\\
+\textbf{Main Flow:}
+\begin{enumerate}
+    \item User navigates to checkout page
+    \item User enters delivery address
+    \item User clicks "Place Order"
+    \item Frontend calls Order Service \texttt{/order/create}
+    \item Order Service creates order record in database
+    \item Order Service calls Cart Service to fetch cart items (Feign)
+    \item System simulates successful payment (mock)
+    \item Order Service calls Notification Service to send confirmation email
+    \item Order Service calls Cart Service to clear user's cart
+    \item System displays order confirmation with order ID
+\end{enumerate}
+
+\section{Requirements Traceability}
+
+Functional requirements map to microservices as follows:
+\begin{itemize}
+    \item User Management $\rightarrow$ Auth Service, User Service
+    \item Product Catalog $\rightarrow$ Category Service, Product Service
+    \item Shopping Cart $\rightarrow$ Cart Service
+    \item Order Processing $\rightarrow$ Order Service
+    \item Email Notifications $\rightarrow$ Notification Service
+    \item API Routing $\rightarrow$ API Gateway
+    \item Service Discovery $\rightarrow$ Service Registry
+\end{itemize}
+
+Non-functional requirements influence architecture decisions including MongoDB for data isolation, Kubernetes for scalability, JWT for stateless security, and GitHub Actions for automated deployment.
+
+\section{Summary}
+
+This chapter specified functional requirements for user management, product catalog, shopping cart, order processing, and notifications. Non-functional requirements addressed performance, scalability, reliability, security, and maintainability. System constraints defined technology stack and deployment environment. Use cases illustrated key user interactions. These requirements form the foundation for system design in the following chapter.

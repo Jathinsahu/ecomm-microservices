@@ -39,7 +39,7 @@ function ProfileCard({ user }) {
     return (
         <section className="profile-card">
             <h3>Welcome, Jathin! <span className="user-name">{user?.username}</span> <span className="user-email">({user?.email})</span></h3>
-            <p className="dashboard-tagline">Your personal JS Premium dashboard. Manage your orders and account here.</p>
+            <p className="dashboard-tagline">Your personal JKart dashboard. Manage your orders and account here.</p>
         </section>
     )
 }

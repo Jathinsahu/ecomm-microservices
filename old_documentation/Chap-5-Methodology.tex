@@ -1,0 +1,309 @@
+\chapter{Methodology}
+
+\section{Introduction}
+
+This chapter describes the systematic methodology employed in developing JKart, encompassing the software development lifecycle, technology selection, implementation strategy, and testing methodology. The methodology integrates agile principles with architectural planning to balance flexibility with architectural coherence.
+
+\section{Software Development Lifecycle}
+
+The project employs an iterative development approach combining agile methodology with architectural runway planning. Development proceeds through phases:
+
+\subsection{Architecture Inception Phase}
+
+Initial phase establishing high-level architecture:
+\begin{itemize}
+    \item Define service boundaries based on business domains (auth, product, cart, order)
+    \item Select technology stack (Spring Boot, MongoDB, React, Kubernetes)
+    \item Design API contracts between services
+    \item Establish security architecture (JWT, Spring Security)
+    \item Provision cloud infrastructure (AWS EKS via Terraform)
+\end{itemize}
+
+\subsection{Iterative Development}
+
+Development proceeds in iterations organized around vertical slices spanning multiple services:
+
+\textbf{Iteration 1:} Service Registry and API Gateway infrastructure\\
+\textbf{Iteration 2:} Auth Service with JWT and email OTP\\
+\textbf{Iteration 3:} User Service and Category Service\\
+\textbf{Iteration 4:} Product Service with search and filtering\\
+\textbf{Iteration 5:} Cart Service with Feign validation\\
+\textbf{Iteration 6:} Order Service with notification integration\\
+\textbf{Iteration 7:} React frontend with authentication\\
+\textbf{Iteration 8:} Frontend product browsing and cart\\
+\textbf{Iteration 9:} Checkout flow and order placement\\
+\textbf{Iteration 10:} Docker containerization and Kubernetes deployment\\
+\textbf{Iteration 11:} CI/CD pipelines with GitHub Actions\\
+\textbf{Iteration 12:} Testing, optimization, and documentation
+
+Each iteration includes implementation, testing, code review, and integration validation ensuring services work together correctly.
+
+\section{Technology Stack Selection}
+
+Technology selection evaluated factors including community adoption, documentation quality, compatibility with requirements, operational complexity, and long-term viability.
+
+\subsection{Backend Framework: Spring Boot 3.2.x}
+
+Spring Boot selected for comprehensive features:
+\begin{itemize}
+    \item Embedded servers eliminating deployment complexity
+    \item Auto-configuration reducing boilerplate
+    \item Spring Data MongoDB simplifying database access
+    \item Spring Security providing authentication infrastructure
+    \item Spring Actuator offering monitoring endpoints
+    \item Extensive Spring Cloud ecosystem for microservices patterns
+\end{itemize}
+
+\subsection{Service Discovery: Netflix Eureka}
+
+Eureka selected for client-side service discovery with:
+\begin{itemize}
+    \item Service registration on startup
+    \item Heartbeat-based health checking
+    \item Registry replication for high availability
+    \item Client-side caching for resilience
+    \item AP characteristics of CAP theorem (prioritizes availability)
+\end{itemize}
+
+\subsection{API Gateway: Spring Cloud Gateway}
+
+Spring Cloud Gateway chosen over alternatives for:
+\begin{itemize}
+    \item Reactive WebFlux architecture for non-blocking requests
+    \item Dynamic routing based on predicates
+    \item Filter chains for request/response modification
+    \item Integration with Eureka service discovery
+    \item Built-in circuit breaker and rate limiting support
+\end{itemize}
+
+\subsection{Inter-Service Communication: OpenFeign}
+
+Spring Cloud OpenFeign provides declarative REST clients:
+\begin{itemize}
+    \item Simplified service-to-service HTTP calls
+    \item Built-in load balancing with Eureka
+    \item Automatic retry and circuit breaker integration
+    \item Type-safe client definitions via Java interfaces
+    \item Cleaner code compared to manual RestTemplate usage
+\end{itemize}
+
+\subsection{Database: MongoDB Atlas}
+
+MongoDB selected over PostgreSQL for:
+\begin{itemize}
+    \item Document-based storage matching JSON API responses
+    \item Flexible schemas accommodating evolving data models
+    \item Horizontal scaling through sharding
+    \item Replica sets for high availability
+    \item Spring Data MongoDB ODM simplifying data access
+    \item Managed cloud service (Atlas) reducing operational overhead
+\end{itemize}
+
+\subsection{Frontend: React.js 18 with Vite}
+
+React selected for component-based architecture:
+\begin{itemize}
+    \item Reusable UI components (ProductCard, CartSidebar, Navbar)
+    \item Virtual DOM for efficient rendering
+    \item React Router DOM for client-side routing
+    \item Axios for API communication
+    \item Context API for state management (AuthContext)
+    \item Vite for fast development server and optimized builds
+\end{itemize}
+
+\subsection{Container Orchestration: Kubernetes on AWS EKS}
+
+Kubernetes provides production-grade orchestration:
+\begin{itemize}
+    \item Automated deployment and scaling
+    \item Self-healing through health checks and restarts
+    \item Horizontal Pod Autoscaler for load-based scaling
+    \item Rolling updates for zero-downtime deployments
+    \item Service discovery and load balancing
+    \item ConfigMaps and Secrets for configuration management
+\end{itemize}
+
+AWS EKS chosen for managed Kubernetes control plane reducing operational complexity.
+
+\subsection{Infrastructure as Code: Terraform}
+
+Terraform enables declarative infrastructure provisioning:
+\begin{itemize}
+    \item VPC with public and private subnets
+    \item EKS cluster with managed node groups
+    \item ECR registries for Docker images
+    \item ALB for ingress traffic
+    \item IAM roles and policies for access control
+    \item State management for infrastructure tracking
+\end{itemize}
+
+\subsection{CI/CD: GitHub Actions}
+
+GitHub Actions automates build and deployment:
+\begin{itemize}
+    \item Separate workflow for each microservice
+    \item Automated Docker image building
+    \item ECR image pushing
+    \item Helm chart deployment to EKS
+    \item Frontend build and deployment
+    \item Triggered on code pushes to main branch
+\end{itemize}
+
+\section{Implementation Strategy}
+
+Implementation followed bottom-up strategy ensuring dependencies available when needed:
+
+\subsection{Phase 1: Infrastructure Services}
+
+\begin{enumerate}
+    \item Setup Service Registry (Eureka) on port 8761
+    \item Implement API Gateway with routing configuration
+    \item Configure CORS and global filters
+    \item Test service registration and routing
+\end{enumerate}
+
+\subsection{Phase 2: Core Business Services}
+
+\begin{enumerate}
+    \item Implement Auth Service with registration, login, JWT
+    \item Add email OTP verification via Notification Service
+    \item Create User Service for profile management
+    \item Develop Category Service with CRUD operations
+    \item Build Product Service with search and filtering
+\end{enumerate}
+
+\subsection{Phase 3: Transactional Services}
+
+\begin{enumerate}
+    \item Implement Cart Service with Feign validation calls
+    \item Develop Order Service with cart integration
+    \item Add mock payment processing
+    \item Integrate Notification Service for order emails
+\end{enumerate}
+
+\subsection{Phase 4: Frontend Development}
+
+\begin{enumerate}
+    \item Setup React application with Vite
+    \item Implement authentication pages (login, register, verify OTP)
+    \item Create product browsing with search and filters
+    \item Build shopping cart with sidebar interface
+    \item Develop checkout flow with order placement
+    \item Add order history and tracking
+\end{enumerate}
+
+\subsection{Phase 5: Containerization and Deployment}
+
+\begin{enumerate}
+    \item Create Dockerfiles for all services (multi-stage builds)
+    \item Build and test Docker images locally
+    \item Write Helm charts for Kubernetes deployment
+    \item Provision AWS infrastructure with Terraform
+    \item Deploy to EKS cluster
+    \item Configure ALB ingress for external access
+\end{enumerate}
+
+\subsection{Phase 6: CI/CD Automation}
+
+\begin{enumerate}
+    \item Create GitHub Actions workflows for each service
+    \item Configure ECR authentication in workflows
+    \item Add Helm deployment steps
+    \item Test automated deployment pipeline
+    \item Configure branch protection rules
+\end{enumerate}
+
+\section{Testing Methodology}
+
+Testing follows the testing pyramid with unit tests at base, integration tests in middle, and end-to-end tests at top.
+
+\subsection{Unit Testing}
+
+\begin{itemize}
+    \item JUnit 5 for test framework
+    \item Mockito for mocking dependencies
+    \item Target: 80\% code coverage
+    \item Tests for service layer business logic
+    \item Controller endpoint validation tests
+    \item Repository tests with embedded MongoDB
+\end{itemize}
+
+\subsection{Integration Testing}
+
+\begin{itemize}
+    \item Spring Boot Test for context loading
+    \item Test service-to-service Feign calls
+    \item Validate MongoDB data operations
+    \item Test authentication and authorization flows
+    \item Verify email sending via Notification Service
+\end{itemize}
+
+\subsection{End-to-End Testing}
+
+\begin{itemize}
+    \item Test complete user journeys (register $\rightarrow$ verify $\rightarrow$ login $\rightarrow$ browse $\rightarrow$ cart $\rightarrow$ order)
+    \item Validate frontend-backend integration
+    \item Test error handling and edge cases
+    \item Verify responsive design on multiple devices
+\end{itemize}
+
+\subsection{Manual Testing}
+
+\begin{itemize}
+    \item API testing via Swagger UI for each service
+    \item Postman collection for endpoint validation
+    \item Cross-browser testing (Chrome, Firefox, Edge)
+    \item Mobile responsiveness testing
+    \item Performance testing with browser DevTools
+\end{itemize}
+
+\section{Quality Assurance Practices}
+
+\subsection{Code Organization}
+
+Consistent package structure across all services:
+\begin{itemize}
+    \item \texttt{controller} - REST endpoints
+    \item \texttt{service} - Business logic
+    \item \texttt{repository} - Data access
+    \item \texttt{model} - Entities and DTOs
+    \item \texttt{config} - Configuration classes
+    \item \texttt{security} - Security filters and utilities
+\end{itemize}
+
+\subsection{Configuration Management}
+
+\begin{itemize}
+    \item Externalized configuration in \texttt{application.yml}
+    \item Environment-specific profiles (dev, prod)
+    \item MongoDB URIs stored securely
+    \item Email credentials in environment variables
+    \item Kubernetes ConfigMaps for deployment configuration
+\end{itemize}
+
+\subsection{Documentation}
+
+\begin{itemize}
+    \item Swagger UI auto-generated from OpenAPI annotations
+    \item README files for each service with setup instructions
+    \item API endpoint documentation with request/response examples
+    \item Architecture diagrams and component documentation
+    \item Deployment guides for local and cloud environments
+\end{itemize}
+
+\section{Development Tools}
+
+\begin{itemize}
+    \item \textbf{IDE:} IntelliJ IDEA for Java development, VS Code for React
+    \item \textbf{Build Tool:} Apache Maven for dependency management
+    \item \textbf{Version Control:} Git with GitHub repository
+    \item \textbf{API Testing:} Postman, Swagger UI
+    \item \textbf{Database:} MongoDB Compass for data inspection
+    \item \textbf{Containerization:} Docker Desktop for local testing
+    \item \textbf{Kubernetes:} kubectl for cluster management, Helm for deployments
+    \item \textbf{Email Testing:} Mailtrap for SMTP testing
+\end{itemize}
+
+\section{Summary}
+
+This chapter described the methodology including iterative development lifecycle, technology stack selection with justifications, phased implementation strategy, comprehensive testing approach, and quality assurance practices. The methodology ensures systematic progression from requirements through design to implementation while maintaining code quality and alignment with industry best practices for cloud-native microservices development.

@@ -73,12 +73,7 @@ public class AuthServiceImpl implements AuthService {
             User savedUser = userRepository.insert(user);
 
             if (savedUser.getId() != null) {
-                try {
-                    sendRegistrationVerificationEmail(user);;
-                }catch (Exception e) {
-                    removeDisabledUser(savedUser.getId());
-                    throw new ServiceLogicException("Failed to send verification email.Recheck your email or try again later!");
-                }
+                sendRegistrationVerificationEmail(user);
             }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(
@@ -213,6 +208,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void sendRegistrationVerificationEmail(User user) {
+        log.info("=====================================================");
+        log.info("VERIFICATION CODE FOR {}: {}", user.getEmail(), user.getVerificationCode());
+        log.info("=====================================================");
+        
         String subject = "Please verify your registration";
         String content = "Dear " + user.getUsername() + ",<br><br>"
                 + "<p>Thank you for joining us! We are glad to have you on board.</p><br>"
@@ -228,7 +227,12 @@ public class AuthServiceImpl implements AuthService {
                 .to(user.getEmail())
                 .build();
 
-        notificationService.sendEmail(mail);
+        try {
+            notificationService.sendEmail(mail);
+        } catch (Exception e) {
+            log.error("Failed to send email to {} via NotificationService. Verification code is: {}", user.getEmail(), user.getVerificationCode());
+            // Intentionally not throwing exception here to allow registration to proceed even if email is not configured.
+        }
     }
 
     private User createUser(SignUpRequestDto signUpRequestDto) throws RoleNotFoundException {

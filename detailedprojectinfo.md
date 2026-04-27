@@ -1,7 +1,7 @@
-# JNexus Commerce — Detailed Project Information
+# JKart — Cloud-Native Microservices E-Commerce Platform
 
 > **Author:** Jathin Kumar Sahu  
-> **Version:** 2.0.1-STABLE  
+> **Version:** 2.1.0-STABLE  
 > **Type:** College Final Year Project  
 > **Category:** Cloud-Native Full-Stack E-Commerce Platform
 
@@ -9,7 +9,7 @@
 
 ## 1. Project Overview
 
-JNexus Commerce is a production-grade, cloud-first e-commerce platform built using a microservices architecture. The application demonstrates real-world software engineering practices including service decomposition, containerization, orchestration, infrastructure as code, and CI/CD automation.
+JKart (formerly JNexus Commerce) is a production-grade, cloud-first e-commerce platform built using a microservices architecture. The application demonstrates real-world software engineering practices including service decomposition, containerization, orchestration, infrastructure as code, and CI/CD automation.
 
 Users can register, browse products by category or search, add items to a cart, and place orders. The system sends transactional emails for registration verification and order confirmation.
 
@@ -23,15 +23,15 @@ The backend is decomposed into 9 independent Spring Boot microservices:
 
 | Service | Port | Database | Purpose |
 |---|---|---|---|
-| `js-service-registry` | 8761 | None | Eureka service discovery server |
-| `js-api-gateway` | 8080 | None | Central request routing via Spring Cloud Gateway |
-| `js-auth-service` | 8081 | `js_auth_service` | User auth, JWT tokens, email OTP |
-| `js-user-service` | 8082 | `js_auth_service` | User profile lookups (used by other services) |
-| `js-category-service` | 8083 | `js_category_service` | Product category CRUD |
-| `js-product-service` | 8084 | `js_product_service` | Product catalog, search |
-| `js-cart-service` | 8085 | `js_cart_service` | Shopping cart management |
-| `js-order-service` | 8086 | `js_order_service` | Order placement & tracking |
-| `js-notification-service` | 8087 | None | Email sending via JavaMail |
+| `service-registry` | 8761 | None | Eureka service discovery server |
+| `api-gateway` | 8080 | None | Central request routing via Spring Cloud Gateway |
+| `auth-service` | 9030 | `js_auth_service` | User auth, JWT tokens, email OTP |
+| `user-service` | 9050 | `js_auth_service` | User profile lookups (shares Auth DB) |
+| `category-service` | 9000 | `js_category_service` | Product category CRUD |
+| `product-service` | 9010 | `js_product_service` | Product catalog, search |
+| `cart-service` | 9060 | `js_cart_service` | Shopping cart management |
+| `order-service` | 9070 | `js_order_service` | Order placement & tracking |
+| `notification-service` | 9020 | None | Email sending via JavaMail |
 
 ### 2.2 Communication Patterns
 
@@ -81,235 +81,82 @@ The backend is decomposed into 9 independent Spring Boot microservices:
 
 ---
 
-## 4. Backend Service Details
+## 4. Core Flow Paths & Implementation
 
-### 4.1 Service Registry (`js-service-registry`)
+### 4.1 User Registration & Email Verification
 
-**Package:** `com.jathinsahu.ecommerce.serviceregistry`  
-**Key annotation:** `@EnableEurekaServer`  
-**URL:** `http://localhost:8761`
+1.  **Request:** Frontend calls `Auth Service` (`/auth/signup`).
+2.  **Creation:** `Auth Service` creates a `User` in `js_auth_service` DB with `enabled = false` and generates a 6-digit OTP.
+3.  **Notification:** `Auth Service` calls `Notification Service` via Feign to send the OTP email (using Mailtrap/SMTP).
+4.  **Verification:** User enters OTP → Frontend calls `Auth Service` (`/auth/signup/verify`).
+5.  **Activation:** `Auth Service` sets `enabled = true` in DB. User can now log in.
 
-The Eureka server dashboard shows all registered services with their instance IDs, health status, and metadata. All microservices register with Eureka on startup and de-register on shutdown.
+### 4.2 Shopping Cart Management
 
----
+1.  **Add Item:** User clicks "Add to Cart" → Frontend calls `Cart Service` (`/cart/add`).
+2.  **Validation:** `Cart Service` calls `User Service` (to check if user exists) and `Product Service` (to verify product details/price) via Feign.
+3.  **Persistence:** If valid, `Cart Service` saves item in `js_cart_service` DB (linked to `userId`).
+4.  **Display:** Frontend calls `Cart Service` (`/cart/get/byUser`) to render the sidebar.
 
-### 4.2 API Gateway (`js-api-gateway`)
+### 4.3 Checkout & Order Placement
 
-**Package:** `com.jathinsahu.ecommerce.apigateway`  
-**Key annotation:** `@EnableDiscoveryClient`  
-**URL:** `http://localhost:8080`
+1.  **Submission:** User clicks "Place Order" → Frontend calls `Order Service` (`/order/create`).
+2.  **Order Creation:** `Order Service` generates an Order record in `js_order_service` DB.
+3.  **Data Sync:** `Order Service` calls `Cart Service` (via Feign) to fetch the items to be ordered.
+4.  **Payment (Mock):** The system simulates a successful payment. **Note:** No real payment gateway (Stripe/PayPal) is currently integrated; it is a demo-only flow.
+5.  **Confirmation:** `Order Service` calls `Notification Service` to send an order success email.
+6.  **Cleanup:** `Order Service` calls `Cart Service` to clear the user's cart items.
 
-Uses Spring Cloud Gateway (reactive, built on Netty + WebFlux). Routes are defined in `application.yml` using Eureka service names. Example route:
-- `/api/auth-service/**` → `AUTH-SERVICE`
-- `/api/product-service/**` → `PRODUCT-SERVICE`
+### 4.4 Product Search & Filtering
 
-Swagger UI: `http://localhost:8080/webjars/swagger-ui/index.html`
-
----
-
-### 4.3 Auth Service (`js-auth-service`)
-
-**Package:** `com.jathinsahu.ecommerce.authservice`  
-**Key annotations:** `@EnableFeignClients`, `@EnableDiscoveryClient`
-
-**Sub-packages:**
-- `controllers` — `AuthController` (REST endpoints)
-- `services` — `AuthService` (interface + `AuthServiceImpl`)
-- `modals` — `User`, `Role` (MongoDB documents)
-- `dtos` — `SignUpRequestDto`, `SignInRequestDto`, `JwtResponseDto`, `UserAuthorityDto`, `ApiResponseDto`, `MailRequestDto`
-- `repositories` — `UserRepository`, `RoleRepository`
-- `security` — `UserDetailsImpl`, `WebSecurityConfig` (Spring Security), no `AuthTokenFilter` (Auth service IS the authority)
-- `exceptions` — `UserAlreadyExistsException`, `UserNotFoundException`, `UserVerificationFailedException`, `RoleNotFoundException`, `ServiceLogicException`
-- `exceptionHandlers` — `RestExceptionHandler` (`@RestControllerAdvice`)
-- `enums` — `ERole` (ROLE_USER, ROLE_ADMIN)
-- `factories` — `RoleFactory`
-- `dataSeeders` — `RoleDataSeeder` (seeds default roles on startup)
-- `feigns` — `NotificationService` (Feign client to send OTP emails)
-- `config` — `SwaggerConfig`
-
-**Flow:**
-1. Registration: `POST /auth/signup` → creates User → sends OTP via Notification Service
-2. Verification: `GET /auth/signup/verify?code=XXX` → enables account
-3. Login: `POST /auth/signin` → validates credentials → returns JWT
-4. Token validation: `GET /auth/isValidToken?token=XXX` → returns `UserAuthorityDto`
+1.  **Search:** User types in navbar → Frontend calls `Product Service` (`/product/search?query=...`).
+2.  **Filter:** User clicks a category → Frontend calls `Product Service` (`/product/get/byCategory?categoryId=...`).
+3.  **Result:** `Product Service` performs a case-insensitive search in MongoDB and returns matching DTOs.
 
 ---
 
-### 4.4 User Service (`js-user-service`)
+## 5. Backend Service Details
 
-**Package:** `com.jathinsahu.ecommerce.userservice`
+### 5.1 Service Registry (`service-registry`)
+- **Port:** 8761
+- Eureka dashboard: `http://localhost:8761`
+- Centralized discovery for all microservices.
 
-Provides user lookups for Cart and Order services. Endpoints:
-- `GET /user/exists/byId?userId=XXX` — boolean existence check
-- `GET /user/get/byId?id=XXX` — returns `UserDto`
+### 5.2 API Gateway (`api-gateway`)
+- **Port:** 8080
+- Central entry point. Routes requests based on `/api/service-name/**`.
+- Handles global CORS and security filters.
 
-**Sub-packages:** `controllers`, `services`, `modals`, `repositories`, `dtos`, `security`, `exceptions`, `feigns`, `config`
+### 5.3 Auth Service (`auth-service`)
+- **Port:** 9030
+- Manages JWT issuance and validation.
+- Handles registration, login, and OTP verification.
 
----
+### 5.4 User Service (`user-service`)
+- **Port:** 9050
+- Shares `js_auth_service` database to provide user validation for other services.
 
-### 4.5 Category Service (`js-category-service`)
+### 5.5 Category & Product Services
+- **Ports:** 9000 (Category), 9010 (Product)
+- Manage the catalog. Admin endpoints are secured via `ROLE_ADMIN`.
 
-**Package:** `com.jathinsahu.ecommerce.categoryservice`
-
-**Sub-packages:** `controllers` (Admin + Common), `services`, `modals` (`Category`), `repositories`, `dtos`, `security`, `exceptions`, `feigns`, `config`
-
-MongoDB collection: `categories`  
-Fields: `id`, `categoryName`, `description`, `imageUrl`
-
----
-
-### 4.6 Product Service (`js-product-service`)
-
-**Package:** `com.jathinsahu.ecommerce.productservice`
-
-**Sub-packages:** `controllers` (Admin + Common), `services`, `models` (`Product`), `repositories`, `dtos`, `security`, `exceptions`, `feigns`, `config`
-
-MongoDB collection: `products`  
-Fields: `id`, `productName`, `price`, `description`, `imageUrl`, `categoryId`, `categoryName`
-
-Custom repository query: full-text search across `productName`, `description`, and `categoryName` using `ContainingIgnoreCase`.
+### 5.6 Cart & Order Services
+- **Ports:** 9060 (Cart), 9070 (Order)
+- Handle the transactional part of the shop. Orchestrate calls between User, Product, and Notification services.
 
 ---
 
-### 4.7 Cart Service (`js-cart-service`)
+## 6. Frontend Architecture
 
-**Package:** `com.jathinsahu.ecommerce.cartservice`
+### 6.1 Theme & Branding
+- **Name:** JKart
+- **Primary Color:** `#6c5ce7` (Deep Purple)
+- **CSS Variable:** `--primary`
+- **Copyright:** `© 2026 | JKart | Designed & Developed by Jathin Kumar Sahu`
 
-**Sub-packages:** `controllers`, `services`, `modals` (`Cart`, `CartItem`), `repositories`, `dtos`, `security`, `exceptions`, `feigns` (Auth, Product, User), `config`
-
-MongoDB collection: `carts`  
-Fields: `id`, `userId`, `cartItems` (Set of CartItem{productId, quantity})
-
-Logic: If cart does not exist for a user, it is auto-created on first access.
-
----
-
-### 4.8 Order Service (`js-order-service`)
-
-**Package:** `com.jathinsahu.ecommerce.orderservice`
-
-**Sub-packages:** `controllers`, `services`, `modals` (`Order`, `OrderItem`), `repositories`, `dtos`, `enums`, `security`, `exceptions`, `feigns` (Auth, Cart, User, Notification), `config`
-
-MongoDB collection: `orders`  
-Fields: `id`, `userId`, `firstName`, `lastName`, `addressLine1`, `addressLine2`, `city`, `phoneNo`, `orderAmt`, `placedOn`, `orderStatus`, `paymentStatus`, `orderItems`
-
-Enums: `EOrderStatus` (PENDING, PROCESSING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED, RETURNED), `EOrderPaymentStatus` (PAID, UNPAID)
-
----
-
-### 4.9 Notification Service (`js-notification-service`)
-
-**Package:** `com.jathinsahu.ecommerce.notificationservice`
-
-**Sub-packages:** `controller`, `services` (`NotificationService` interface + `EmailNotificationService`), `dtos`, `config`
-
-Uses `JavaMailSender` with `MimeMessage` for HTML email support. Called by Auth Service (OTP) and Order Service (order confirmation).
-
----
-
-## 5. Frontend Architecture
-
-### 5.1 Project Structure
-
-```
-frontend/src/
-├── api-service/       # Axios service layer (auth, cart, order, product)
-├── assets/styles/     # Global CSS with CSS custom properties
-├── components/        # Reusable UI components
-│   ├── header/        # Navigation, search, cart icon
-│   ├── footer/        # Footer, CopyRight, Signature
-│   ├── logo/          # Brand logo "JS Premium"
-│   ├── cart/          # Cart sidebar
-│   ├── categories/    # Category display
-│   ├── about/         # About section
-│   ├── home_hero/     # Landing hero
-│   ├── loading/       # Loading spinner
-│   └── info/          # Info/message display
-├── contexts/          # React Context (AuthContext, CartContext)
-├── pages/             # Page components
-│   ├── home/          # Landing page
-│   ├── auth/          # Login, Register, Verify, Error pages
-│   ├── products/      # Product listing
-│   ├── search/        # Search results
-│   ├── checkout/      # Checkout + Order success
-│   └── my.account/    # User dashboard + order history
-└── routes/            # React Router configuration
-```
-
-### 5.2 Theme & Branding
-
-| CSS Variable | Value | Usage |
-|---|---|---|
-| `--primary` | `#6c5ce7` (Deep Purple) | Navbar, buttons, borders |
-| `--secondary` | `#a29bfe` (Light Purple) | Hover states |
-| `--ternary` | `#2c3e50` (Dark Slate) | Signature bar, accents |
-| `--light` | `#dfe6e9` (Light Gray) | Search input bg, footer bg |
-| `--body` | `#EFF0F3` (Off-white) | Page background |
-
-Brand name: **JS Premium** (navbar logo)  
-Browser title: `JS Engine | Shop`  
-Footer copyright: `© 2026 | JS Premium | Designed & Developed by Jathin Kumar Sahu`  
-Signature bar: `System Status: Active | Version: 2.0.1-STABLE | Developed by Jathin Sahu`
-
-### 5.3 Authentication Flow
-
-1. User calls `AuthService.login()` → `POST /api/auth-service/auth/signin`
-2. JWT token + user details stored in `localStorage` under key `"user"`
-3. `AuthContext` exposes `user` state across all components
-4. `toggleUser()` refreshes user from localStorage (called on login/logout)
-5. Protected routes check `user` from context; if null, show `<Unauthorized />`
-
----
-
-## 6. Deployment Architecture
-
-### 6.1 Docker
-
-Each service has a `Dockerfile` using multi-stage build:
-1. Build stage: Maven/Node build
-2. Runtime stage: JRE/Nginx + app JAR/static files
-
-All images use `COPY target/*.jar app.jar` (wildcard, safe after artifactId changes).
-
-### 6.2 Kubernetes (AWS EKS)
-
-Cluster name: `js-commerce-cluster`
-
-Each service has a Helm chart in `helm-charts/<service>/` containing:
-- `Deployment.yaml` — Pod spec, resource limits, env vars from secrets/configmaps
-- `Service.yaml` — ClusterIP service
-- `hpa.yaml` — HorizontalPodAutoscaler (CPU-based scaling)
-- `configmap.yaml` — Non-sensitive configuration
-- `secret.yaml` — Sensitive data (DB URIs, JWT secret, mail credentials)
-
-Ingress: `helm-charts/ingress-alb/` — AWS ALB Ingress Controller routes external traffic.
-
-### 6.3 AWS Infrastructure (Terraform)
-
-| Resource | Purpose |
-|---|---|
-| VPC | Isolated network across 2 AZs |
-| 2 Public Subnets | NAT Gateway, ALB |
-| 2 Private Subnets | EKS worker nodes (never exposed to internet) |
-| Internet Gateway | Public subnet internet access |
-| NAT Gateway | Private subnet outbound access (ECR image pulls) |
-| EKS Cluster | Managed Kubernetes control plane |
-| EKS Node Group | Managed worker nodes (auto-scaled) |
-| ALB Controller | Kubernetes Ingress → AWS ALB |
-| Metrics Server | HPA pod resource metrics |
-| Cluster Autoscaler | Automatic node scaling |
-| ECR Repositories | Docker image storage (one per service) |
-
-### 6.4 CI/CD Pipeline (GitHub Actions)
-
-11 workflow files in `.github/workflows/` (one per service + web).
-
-Each pipeline:
-1. **Build & Test**: `mvn clean package` / `npm run build`
-2. **Docker Build & Push**: Build image → tag → push to ECR
-3. **Helm Deploy**: `helm upgrade --install` on EKS cluster
-
-Triggered on: push to `main` branch for the respective service path.
+### 6.2 State Management
+- **AuthContext:** Manages user login state and persists to `localStorage`.
+- **Axios Services:** Isolated layer for API communication at `frontend/src/api-service/`.
 
 ---
 
@@ -317,58 +164,25 @@ Triggered on: push to `main` branch for the respective service path.
 
 | Layer | Mechanism |
 |---|---|
-| Authentication | JWT Bearer tokens (HMAC SHA-256 signing) |
+| Authentication | JWT Bearer tokens (HMAC SHA-256) |
 | Authorization | `@PreAuthorize` + `hasAuthority("ROLE_ADMIN")` / `"ROLE_USER"` |
-| Token Storage | `localStorage` (frontend) |
-| Token Validation | Auth Service validates token for every secured request |
-| Password Storage | BCrypt hashed (Spring Security) |
-| CSRF | Disabled (stateless REST API) |
-| CORS | Configured in API Gateway |
+| Password Storage | BCrypt hashed |
 | Session Management | STATELESS (no server-side sessions) |
 
 ---
 
 ## 8. API Documentation (Swagger)
 
-After starting each service, Swagger UI is available at:
-
 | Service | Swagger URL |
 |---|---|
-| Auth Service | `http://localhost:8081/swagger-ui/index.html` |
-| User Service | `http://localhost:8082/swagger-ui/index.html` |
-| Category Service | `http://localhost:8083/swagger-ui/index.html` |
-| Product Service | `http://localhost:8084/swagger-ui/index.html` |
-| Cart Service | `http://localhost:8085/swagger-ui/index.html` |
-| Order Service | `http://localhost:8086/swagger-ui/index.html` |
-| Notification Service | `http://localhost:8087/swagger-ui/index.html` |
-| Service Registry | `http://localhost:8761/swagger-ui/index.html` |
-
-All configured with: Contact = **Jathin Kumar Sahu** / `jathinsahu@gmail.com`
+| Auth Service | `http://localhost:9030/swagger-ui/index.html` |
+| User Service | `http://localhost:9050/swagger-ui/index.html` |
+| Category Service | `http://localhost:9000/swagger-ui/index.html` |
+| Product Service | `http://localhost:9010/swagger-ui/index.html` |
+| Cart Service | `http://localhost:9060/swagger-ui/index.html` |
+| Order Service | `http://localhost:9070/swagger-ui/index.html` |
+| Notification Service | `http://localhost:9020/swagger-ui/index.html` |
 
 ---
 
-## 9. MongoDB Databases
-
-| Database Name | Used By | Key Collections |
-|---|---|---|
-| `js_auth_service` | Auth Service, User Service | `Users`, `Roles` |
-| `js_category_service` | Category Service | `categories` |
-| `js_product_service` | Product Service | `products` |
-| `js_cart_service` | Cart Service | `carts` |
-| `js_order_service` | Order Service | `orders` |
-
----
-
-## 10. Key Design Decisions
-
-1. **Separate DB per service** — Ensures loose coupling; each service owns its data.
-2. **Feign over RestTemplate** — Declarative, readable, integrates with Eureka load balancing.
-3. **JWT stateless auth** — No session affinity needed; works perfectly with horizontal scaling.
-4. **Eureka + Spring Cloud Gateway** — Standard Spring Cloud Netflix stack for reliable service discovery.
-5. **HPA + Cluster Autoscaler** — Two-level autoscaling: pod-level and node-level.
-6. **Terraform IaC** — All AWS resources are reproducible and version-controlled.
-7. **Per-service CI/CD** — Independent pipelines allow deploying a single service without affecting others.
-
----
-
-*Document prepared by: Jathin Kumar Sahu | JNexus Commerce v2.0.1-STABLE*
+*Document prepared by: Jathin Kumar Sahu | JKart v2.1.0-STABLE*

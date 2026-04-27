@@ -60,7 +60,7 @@ function Header() {
                 <div className="search">
                     <input
                         type="search"
-                        placeholder="Search JS Premium store..."
+                        placeholder="Search JKart store..."
                         value={searchKey}
                         onChange={(e) => onSearchKeyChange(e.target.value)}
                     />
@@ -103,7 +103,7 @@ function Header() {
                 <div className="search">
                     <input
                         type="search"
-                        placeholder="Search JS Premium store..."
+                        placeholder="Search JKart store..."
                         value={searchKey}
                         onChange={(e) => onSearchKeyChange(e.target.value)}
                     />
