@@ -82,3 +82,8 @@ dist-ssr
 # Environment variables with secrets
 .env
 !.env.example
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
