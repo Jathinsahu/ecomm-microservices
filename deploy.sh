@@ -2,6 +2,7 @@
 
 # JKart Production Deployment Script
 # Single command to deploy all microservices
+# Compatible with ByteXL Nimbus (bash only)
 
 set -e
 
@@ -21,19 +22,29 @@ if [ ! -f .env ]; then
     echo "   - JWT secret key"
     echo "   - Email SMTP credentials"
     echo ""
-    echo "Then run: ./deploy.sh"
+    echo "Then run: bash deploy.sh"
     exit 1
 fi
 
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
-    echo "❌ Docker is not installed. Please install Docker first."
+    echo "❌ Docker is not installed."
     exit 1
 fi
 
 # Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null; then
-    echo "❌ Docker Compose is not installed. Please install Docker Compose first."
+if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+    echo "❌ Docker Compose is not installed."
+    exit 1
+fi
+
+# Detect docker-compose command (v1 or v2)
+if command -v docker-compose &> /dev/null; then
+    COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null; then
+    COMPOSE_CMD="docker compose"
+else
+    echo "❌ Docker Compose not found"
     exit 1
 fi
 
@@ -42,24 +53,17 @@ echo ""
 
 # Stop any running containers
 echo "🛑 Stopping existing containers..."
-docker-compose down 2>/dev/null || true
+$COMPOSE_CMD down 2>/dev/null || true
 echo ""
 
-# Pull latest code (if in git repo)
-if [ -d .git ]; then
-    echo "📥 Pulling latest code..."
-    git pull || echo "⚠️  Git pull failed, continuing with current code..."
-    echo ""
-fi
-
 # Build all services
-echo "🔨 Building all microservices..."
-docker-compose build --no-cache
+echo "🔨 Building all microservices (this may take 10-15 minutes)..."
+$COMPOSE_CMD build --no-cache
 echo ""
 
 # Start all services
 echo "🚀 Starting all services..."
-docker-compose up -d
+$COMPOSE_CMD up -d
 echo ""
 
 # Wait for services to be ready
@@ -70,22 +74,10 @@ sleep 30
 echo ""
 echo "📊 Service Status:"
 echo "========================================="
-docker-compose ps
+$COMPOSE_CMD ps
 echo ""
 
-# Show logs for first 60 seconds
-echo "📋 Showing startup logs (Ctrl+C to stop)..."
-echo "========================================="
-docker-compose logs --tail=100 -f &
-LOG_PID=$!
-
-# Wait 60 seconds then show summary
-sleep 60
-kill $LOG_PID 2>/dev/null || true
-
-echo ""
-echo "========================================="
-echo "  ✅ Deployment Complete!"
+echo "✅ Deployment Complete!"
 echo "========================================="
 echo ""
 echo "📍 Service Endpoints:"
@@ -100,10 +92,10 @@ echo "   - Order Service:       http://localhost:9070"
 echo "   - Notification Svc:    http://localhost:9020"
 echo ""
 echo "📝 Useful Commands:"
-echo "   - View logs:           docker-compose logs -f"
-echo "   - Stop services:       docker-compose down"
-echo "   - Restart services:    docker-compose restart"
-echo "   - Rebuild services:    docker-compose up -d --build"
+echo "   - View logs:           $COMPOSE_CMD logs -f"
+echo "   - Stop services:       $COMPOSE_CMD down"
+echo "   - Restart services:    $COMPOSE_CMD restart"
+echo "   - Rebuild services:    $COMPOSE_CMD up -d --build"
 echo ""
 echo "🎉 JKart is running! Visit Eureka Dashboard to see all registered services."
 echo ""
