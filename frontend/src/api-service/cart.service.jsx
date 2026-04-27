@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
-import API_BASE_URL from "./apiConfig";
-import axios from 'axios';
+import apiClient from './apiClient';
 
 function CartService() {
     const [cart, setCart] = useState({})
@@ -8,58 +7,42 @@ function CartService() {
     const [isProcessingCart, setProcessing] = useState(false);
     const user = JSON.parse(localStorage.getItem("user"));
 
-    const authHeader = () => {
-        return { Authorization: `${user?.type} ${user?.token}` };
-    }
-
     const addItemToCart = async (productId, quantity) => {
         setProcessing(true)
-        await axios.post(
-            `${API_BASE_URL}/cart-service/cart/add`,
-            { productId, quantity },
-            { headers: authHeader() }
-        )
-            .then((response) => {
-                setError(false)
-            })
-            .catch((error) => {
-                setError(true)
-            })
+        try {
+            await apiClient.post('/cart-service/cart/add', { productId, quantity });
+            setError(false);
+        } catch (error) {
+            setError(true);
+        }
         setProcessing(false)
         getCartInformation()
     }
 
     const updateItemQuantity = async (productId, quantity) => {
         setProcessing(true)
-        await axios.post(
-            `${API_BASE_URL}/cart-service/cart/add`,
-            { productId, quantity },
-            { headers: authHeader() }
-        )
-            .then((response) => {
-                setError(false)
-            })
-            .catch((error) => {
-                setError(true)
-            })
+        try {
+            await apiClient.post('/cart-service/cart/add', { productId, quantity });
+            setError(false);
+        } catch (error) {
+            setError(true);
+        }
         setProcessing(false)
         getCartInformation()
     }
 
     const removeItemFromCart = async (productId) => {
         setProcessing(true)
-        await axios.delete(`${API_BASE_URL}/cart-service/cart/remove`, {
-            headers: authHeader(),
-            params: {
-                productId: productId
-            }
-        })
-            .then((response) => {
-                setError(false)
-            })
-            .catch((error) => {
-                setError(true)
-            })
+        try {
+            await apiClient.delete('/cart-service/cart/remove', {
+                params: {
+                    productId: productId
+                }
+            });
+            setError(false);
+        } catch (error) {
+            setError(true);
+        }
         getCartInformation()
     }
 
@@ -70,17 +53,14 @@ function CartService() {
             return
         }
         setProcessing(true)
-        await axios.get(`${API_BASE_URL}/cart-service/cart/get/byUser`, {
-            headers: authHeader()
-        })
-            .then((response) => {
-                setError(false)
-                setCart(response.data.response)
-            })
-            .catch((error) => {
-                setCart({cartItems:[]})
-                setError(true)
-            })
+        try {
+            const response = await apiClient.get('/cart-service/cart/get/byUser');
+            setError(false)
+            setCart(response.data.response)
+        } catch (error) {
+            setCart({cartItems:[]})
+            setError(true)
+        }
         setProcessing(false)
     }
 
