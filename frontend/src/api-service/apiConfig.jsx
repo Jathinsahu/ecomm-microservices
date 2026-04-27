@@ -1,3 +1,3 @@
-const API_BASE_URL = "http://localhost:8080"
+const API_BASE_URL = "https://j-kart.bytexl.live"
 
 export default API_BASE_URL;
