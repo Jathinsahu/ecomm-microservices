@@ -1,0 +1,89 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage{times}
+\usepackage{graphicx}
+\tolerance=1
+\emergencystretch=\maxdimen
+\hyphenpenalty=10000
+\hbadness=10000
+\usepackage{amsmath}
+\usepackage{acro}
+\usepackage[utf8]{inputenc}
+%\usepackage[acronym]{glossaries}
+%\usepackage[toc]{glossaries}
+%\usepackage[refpage]{nomencl}
+\usepackage{color}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{mathdots}
+\usepackage{rotating}
+\usepackage{longtable}
+\usepackage{array}
+\DeclareGraphicsExtensions{.pdf,.jpeg,.png, .PNG}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor={red}
+}
+\urlstyle{same}
+\usepackage{mathtools}
+\usepackage[superscript]{cite}
+\usepackage[top=2cm, bottom=2cm, left=2.5cm, right=2cm]{geometry}
+\usepackage[compact]{titlesec}
+\usepackage{fancyhdr} %header
+\usepackage{setspace}
+\usepackage{fontenc}
+\usepackage{microtype}
+\usepackage{booktabs}%table
+\usepackage{multirow}%table
+\usepackage[table,xcdraw]{xcolor}%table
+\usepackage{transparent}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[final]{pdfpages}
+\usepackage{MnSymbol,wasysym}
+\PassOptionsToPackage{hyphens}{url}%For Bilblography
+\linespread{1.5}
+
+\setlength{\arrayrulewidth}{0.4mm}
+\setlength{\tabcolsep}{18pt}
+\renewcommand{\arraystretch}{1.5}
+\pagestyle{fancy}
+\fancyhf{} 
+\fancyhead[R]{\itshape\leftmark}
+\fancyfoot[C]{\thepage}
+\renewcommand\headrulewidth{0pt}% suppress the header rule
+
+
+
+\begin{document}
+\renewcommand{\thepage}{\roman{page}}
+\include{cover.tex}
+\include{Certificate.tex}
+\include{Ack}
+\include{Abstract}
+
+\include{toc}
+
+\pagenumbering{arabic}
+
+\renewcommand{\chaptermark}[1]{\markboth{\chaptername\ \thechapter\ -\ #1}{}}
+
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\footrulewidth}{1pt}
+
+\include{Chap-1-Intro}
+\include{chap-2-Lit}
+\include{Chap-3-SRS}
+\include{chap-4-Design}
+\include{Chap-5-Methodology}
+\include{Chap-6-imple}
+\include{Chap-7-Concl}
+\include{Chap-8-Futur}
+
+\include{Bibilio}
+
+\end{document}

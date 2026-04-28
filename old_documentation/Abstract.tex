@@ -1,0 +1,22 @@
+\thispagestyle{empty}
+\newpage
+\cleardoublepage\phantomsection
+\addcontentsline{toc}{chapter}{Abstract}\index{Abstract}
+
+\begin{center}
+{\Large \bf Abstract}\\
+\end{center}
+\vspace{10pt}
+
+The "JKart - Cloud-Native Microservices E-Commerce Platform" project aims to design and implement a production-grade e-commerce solution using modern cloud-native architecture patterns. This report outlines the project's objectives, methodology, implementation, and results in building a scalable, resilient distributed system.
+
+With the exponential growth of online retail, traditional monolithic e-commerce platforms face significant challenges in scalability, deployment velocity, and technology flexibility. To address these challenges, JKart was developed as a comprehensive microservices-based platform comprising nine independently deployable Spring Boot services, a React.js frontend, and MongoDB databases, deployed on AWS Elastic Kubernetes Service (EKS) using Helm charts and Terraform infrastructure-as-code.
+
+The platform implements essential e-commerce functionality including user registration with email OTP verification, JWT-based authentication, product catalog management with search and filtering, shopping cart operations, order placement with mock payment processing, and transactional email notifications. The architecture leverages Spring Cloud Netflix Eureka for service discovery, Spring Cloud Gateway for API routing, and OpenFeign for inter-service communication, with comprehensive security through Spring Security and role-based access control.
+
+The system demonstrates cloud-native best practices including containerization with Docker, orchestration through Kubernetes on AWS EKS, infrastructure provisioning via Terraform, and CI/CD automation through GitHub Actions. Each microservice maintains its own MongoDB database following the database-per-service pattern, ensuring loose coupling and independent scalability.
+
+Overall, JKart represents a production-ready implementation of microservices architecture for e-commerce, demonstrating industry-standard patterns including API Gateway, service discovery, distributed authentication, and cloud deployment. The platform provides a comprehensive case study for understanding modern software engineering practices in building scalable, maintainable distributed systems.
+
+\vspace{0.5cm}
+\noindent\textbf{Key Points:} microservices architecture, e-commerce platform, Spring Boot, React.js, MongoDB, Kubernetes, AWS EKS, JWT authentication, Docker, Terraform.

@@ -1,0 +1,99 @@
+\chapter{Literature Review}
+
+\section{Introduction}
+
+This chapter reviews existing literature and industry practices related to microservices architecture, cloud-native technologies, and e-commerce platforms, establishing the theoretical foundation for this project.
+
+\section{Evolution of Software Architecture}
+
+\subsection{Monolithic Architecture}
+
+Traditional software systems used monolithic architecture where all components are integrated into a single codebase. Richardson (2018) notes that while suitable for small applications, monolithic systems exhibit scalability constraints, deployment bottlenecks, technology lock-in, and fault propagation as they grow (Newman, 2021).
+
+\subsection{Microservices Architecture}
+
+Microservices architecture represents an evolution addressing monolithic limitations. Fowler and Lewis (2014) define microservices as loosely coupled services implementing specific business capabilities, owned by small teams. Key characteristics include componentization via services, organization around business capabilities, decentralized governance and data management, infrastructure automation, and design for failure (Richardson, 2018).
+
+\section{Microservices Design Patterns}
+
+\subsection{Service Discovery}
+
+In microservices environments, services dynamically locate each other through service discovery. Ng et al. (2020) describe two approaches: client-side discovery where clients query the registry directly, and server-side discovery through load balancers. Netflix Eureka implements client-side discovery with heartbeat-based health checking and registry replication, prioritizing availability following the CAP theorem's AP characteristics (Gupta, 2019).
+
+\subsection{API Gateway Pattern}
+
+The API Gateway serves as the single entry point for client requests. Richardson (2018) explains that API Gateways provide request routing, protocol translation, authentication, rate limiting, and analytics. Spring Cloud Gateway implements this pattern using Spring WebFlux for reactive, non-blocking request handling with dynamic routing, filter chains, and circuit breaker integration (Spring, 2023).
+
+\subsection{Inter-Service Communication}
+
+Microservices communicate through synchronous REST APIs or asynchronous messaging. Spring Cloud OpenFeign provides declarative REST clients, simplifying service-to-service HTTP calls with built-in load balancing and circuit breaker support. For asynchronous communication, message brokers like Apache Kafka enable event-driven architectures, though this project uses synchronous Feign calls for simplicity.
+
+\section{Security in Microservices}
+
+\subsection{JWT Authentication}
+
+JSON Web Tokens (JWT) provide stateless authentication suitable for microservices. Jones et al. (2020) describe JWT structure comprising header, payload, and signature. Tokens are issued upon successful authentication and validated on subsequent requests without server-side session storage. This project implements HMAC-SHA256 signed JWT with 24-hour expiration.
+
+\subsection{Role-Based Access Control}
+
+RBAC enforces authorization by assigning permissions to roles rather than individual users. Spring Security provides \texttt{@PreAuthorize} annotations for method-level security, enabling fine-grained access control based on user roles such as ROLE\_USER and ROLE\_ADMIN.
+
+\section{Database Architectures}
+
+\subsection{Database-per-Service Pattern}
+
+The database-per-service pattern assigns dedicated databases to each microservice, ensuring loose coupling and independent schema evolution (Richardson, 2018). Each service can choose appropriate database technology, enabling polyglot persistence. This project uses MongoDB for all services, providing document-based storage with flexible schemas suitable for e-commerce data models.
+
+\subsection{MongoDB for Microservices}
+
+MongoDB is a NoSQL document database storing data in BSON format. Spring Data MongoDB provides Object Document Mapper (ODM) capabilities, mapping Java objects to MongoDB documents with repository abstractions simplifying CRUD operations. MongoDB's horizontal scaling through sharding and replica sets makes it suitable for cloud-native applications.
+
+\section{Container Orchestration}
+
+\subsection{Docker Containerization}
+
+Docker packages applications with dependencies into standardized containers ensuring consistent deployment across environments (Merkel, 2019). Multi-stage builds optimize image sizes by separating build and runtime stages, copying only compiled artifacts to final images based on slim JRE images.
+
+\subsection{Kubernetes Orchestration}
+
+Kubernetes automates deployment, scaling, and management of containerized applications. Burns et al. (2020) describe Kubernetes architecture including master nodes for control plane, worker nodes for running containers, pods as smallest deployable units, and deployments for declarative application management. Features include automatic bin packing, service discovery, load balancing, automated rollouts/rollbacks, self-healing, and horizontal pod autoscaling.
+
+\subsection{Helm Package Manager}
+
+Helm is the Kubernetes package manager defining, installing, and upgrading complex Kubernetes applications through charts containing templated YAML manifests. Helm charts enable parameterized deployments with values files supporting environment-specific configuration without modifying chart templates.
+
+\section{Infrastructure as Code}
+
+Terraform enables infrastructure provisioning through declarative configuration files defining cloud resources. HashiCorp Configuration Language (HCL) specifies desired infrastructure state, with Terraform creating execution plans and applying changes to reach that state. This project uses Terraform to provision AWS VPC, EKS clusters, ECR registries, and IAM policies.
+
+\section{CI/CD Automation}
+
+GitHub Actions provides workflow automation for building, testing, and deploying code changes. YAML-based workflow definitions specify triggers, jobs, and steps executing in virtual environments. This project implements separate CI/CD pipelines for each microservice, frontend, and infrastructure components, enabling independent deployment workflows.
+
+\section{E-Commerce Platform Architectures}
+
+\subsection{Traditional E-Commerce Systems}
+
+Traditional e-commerce platforms often use monolithic architectures with tightly coupled components for product catalog, shopping cart, order management, and payment processing. While suitable for small-scale operations, these systems face challenges handling high traffic volumes and implementing rapid feature updates.
+
+\subsection{Modern Microservices-Based E-Commerce}
+
+Modern e-commerce platforms increasingly adopt microservices architecture for scalability and agility. Amazon's transition to microservices enabled independent team ownership, faster deployment cycles, and improved resilience (Brittain, 2020). Key patterns include API Gateway for unified access, service decomposition by business domain, separate read/write models, and distributed caching.
+
+\section{Research Gaps and Project Positioning}
+
+The literature review reveals gaps this project addresses:
+
+\begin{itemize}
+    \item \textbf{Comprehensive Implementation:} Few resources provide complete implementations combining microservices, Kubernetes deployment, and CI/CD automation for e-commerce.
+    
+    \item \textbf{Practical Demonstrations:} Academic literature often focuses on theory without practical implementations. This project provides working code demonstrating patterns in real-world scenarios.
+    
+    \item \textbf{Cloud-Native Integration:} The integration of Spring Boot, MongoDB, Docker, Kubernetes, Terraform, and GitHub Actions demonstrates current best practices not fully covered in existing literature.
+    
+    \item \textbf{Educational Value:} The project serves as a comprehensive case study for understanding enterprise microservices architecture and cloud deployment.
+\end{itemize}
+
+\section{Summary}
+
+This chapter reviewed the evolution from monolithic systems to microservices, examined design patterns including service discovery, API Gateway, and security, discussed database architectures, container orchestration with Kubernetes, and infrastructure automation. The review established that microservices architecture with cloud-native deployment represents best practice for scalable e-commerce platforms. This project addresses the gap by providing a comprehensive, production-ready implementation serving as both functional platform and educational resource.

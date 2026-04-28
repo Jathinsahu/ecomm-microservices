@@ -1,0 +1,146 @@
+\chapter{Introduction}
+
+\section{Background}
+
+The e-commerce industry has experienced exponential growth in the digital era, with global online retail sales reaching unprecedented levels. Traditional monolithic architectures, while initially adequate for small-scale applications, face significant challenges when handling modern e-commerce requirements including scalability limitations, deployment bottlenecks, and technology stack constraints.
+
+The evolution of software architecture has led to microservices as a solution to these limitations. Microservices architecture decomposes applications into small, independently deployable services, each responsible for specific business capabilities. This architectural style has been successfully adopted by industry leaders such as Amazon, Netflix, and Uber, demonstrating its effectiveness in building scalable and maintainable systems.
+
+This project, titled \textbf{JKart - Cloud-Native Microservices E-Commerce Platform}, demonstrates the practical implementation of microservices architecture in a comprehensive e-commerce solution. The platform consists of nine independently deployable Spring Boot microservices, each managing specific business domains including authentication, user management, product catalog, shopping cart, order processing, and notifications.
+
+The implementation leverages modern cloud-native technologies including Spring Boot 3.x for service development, Spring Cloud for infrastructure patterns (Eureka, Gateway, OpenFeign), MongoDB for data persistence, Docker for containerization, and Kubernetes for orchestration on AWS Elastic Kubernetes Service (EKS). The platform incorporates comprehensive CI/CD automation through GitHub Actions and infrastructure-as-code using Terraform.
+
+\section{Problem Statement}
+
+The development of enterprise-grade e-commerce platforms presents several critical challenges:
+
+\begin{itemize}
+    \item \textbf{Scalability Limitations:} Monolithic architectures require scaling the entire application even when only specific components experience high load, leading to inefficient resource utilization.
+    
+    \item \textbf{Deployment Bottlenecks:} Any code change requires redeploying the entire application, increasing deployment risk and reducing development velocity.
+    
+    \item \textbf{Technology Lock-in:} Monolithic applications typically use a single technology stack, preventing teams from leveraging appropriate technologies for specific functionalities.
+    
+    \item \textbf{Fault Propagation:} A failure in one component can cascade and bring down the entire system, resulting in complete service unavailability.
+    
+    \item \textbf{Independent Team Development:} Large monolithic codebases hinder parallel development by multiple teams working on different features.
+\end{itemize}
+
+These challenges necessitate a microservices-based approach with proper service decomposition, independent deployment capabilities, and comprehensive infrastructure automation. This project addresses these challenges by implementing a production-ready e-commerce platform that demonstrates industry best practices.
+
+\section{Objectives}
+
+The primary objectives of this project are:
+
+\begin{enumerate}
+    \item To design and implement a scalable microservices-based e-commerce platform comprising nine independently deployable services with clear bounded contexts.
+    
+    \item To implement service discovery and registration using Netflix Eureka, enabling dynamic service lookup in a cloud-native environment.
+    
+    \item To develop API Gateway pattern using Spring Cloud Gateway for centralized request routing, CORS management, and cross-cutting concern handling.
+    
+    \item To implement JWT-based authentication with role-based access control, ensuring secure access to protected resources across all services.
+    
+    \item To develop inter-service communication using Spring Cloud OpenFeign for synchronous HTTP calls between microservices.
+    
+    \item To implement email notification system for user registration OTP verification and order confirmation using JavaMail/SMTP.
+    
+    \item To containerize all microservices using Docker and deploy to AWS Elastic Kubernetes Service (EKS) using Helm charts.
+    
+    \item To implement infrastructure-as-code using Terraform for provisioning AWS resources including VPC, EKS cluster, and ECR registries.
+    
+    \item To develop a modern, responsive React-based frontend with Deep Purple theme, providing intuitive user interface for product browsing, cart management, and order placement.
+    
+    \item To establish CI/CD pipelines using GitHub Actions for automated building, testing, and deployment of all services.
+\end{enumerate}
+
+\section{Scope of the Project}
+
+The scope encompasses the complete design, development, and cloud deployment of an enterprise-grade e-commerce microservices platform:
+
+\subsection{Backend Services}
+
+The platform implements nine core microservices:
+
+\begin{itemize}
+    \item \textbf{Service Registry (Port 8761):} Netflix Eureka server providing service discovery and registration capabilities.
+    
+    \item \textbf{API Gateway (Port 8080):} Spring Cloud Gateway serving as single entry point for all client requests with routing to backend services.
+    
+    \item \textbf{Auth Service (Port 9030):} Manages user registration, JWT token generation/validation, email OTP verification with database \texttt{js\_auth\_service}.
+    
+    \item \textbf{User Service (Port 9050):} Provides user profile lookups, shares \texttt{js\_auth\_service} database with Auth Service for user validation.
+    
+    \item \textbf{Category Service (Port 9000):} Handles product category CRUD operations with database \texttt{js\_category\_service}.
+    
+    \item \textbf{Product Service (Port 9010):} Manages product catalog including creation, search, filtering with database \texttt{js\_product\_service}.
+    
+    \item \textbf{Cart Service (Port 9060):} Implements shopping cart management with database \texttt{js\_cart\_service}.
+    
+    \item \textbf{Order Service (Port 9070):} Handles order placement and tracking with database \texttt{js\_order\_service}.
+    
+    \item \textbf{Notification Service (Port 9020):} Sends transactional emails via JavaMail/SMTP (Mailtrap for testing).
+\end{itemize}
+
+\subsection{Infrastructure Components}
+
+\begin{itemize}
+    \item MongoDB Atlas databases with database-per-service pattern for data isolation
+    \item Docker containerization for all microservices
+    \item AWS Elastic Kubernetes Service (EKS) for container orchestration
+    \item Helm charts for Kubernetes package management
+    \item Terraform for AWS infrastructure provisioning (VPC, EKS, ECR, ALB)
+    \item GitHub Actions for CI/CD automation
+    \item Amazon ECR for Docker image registry
+\end{itemize}
+
+\subsection{Frontend Application}
+
+A React.js single-page application provides the user interface:
+
+\begin{itemize}
+    \item User registration with email OTP verification and authentication with JWT
+    \item Product catalog browsing with category filtering and search functionality
+    \item Shopping cart management with sidebar interface
+    \item Order placement with address collection and mock payment
+    \item Order history and status tracking
+    \item Responsive design with Deep Purple (\#6c5ce7) theme
+\end{itemize}
+
+\section{Significance of the Project}
+
+This project holds significant academic and practical value:
+
+\subsection{Academic Significance}
+
+The project demonstrates advanced software architecture concepts in a practical implementation, providing a comprehensive case study for understanding microservices patterns, cloud-native technologies, and DevOps practices.
+
+\subsection{Industry Relevance}
+
+The architectural patterns align with industry best practices adopted by leading technology companies, including service decomposition, container orchestration, infrastructure-as-code, and CI/CD automation.
+
+\subsection{Technical Learning}
+
+The project provides hands-on experience with Spring Boot, Spring Cloud, React.js, MongoDB, Docker, Kubernetes, Terraform, and AWS cloud services, demonstrating how to address real-world distributed systems challenges.
+
+\section{Report Organization}
+
+This report is organized into seven chapters:
+
+\begin{itemize}
+    \item \textbf{Chapter 1: Introduction} - Background, problem statement, objectives, scope, and significance.
+    
+    \item \textbf{Chapter 2: Literature Review} - Review of microservices architecture, cloud-native technologies, and e-commerce platforms.
+    
+    \item \textbf{Chapter 3: System Requirements Specification} - Functional and non-functional requirements, use cases.
+    
+    \item \textbf{Chapter 4: System Design} - Architecture design, component diagrams, database design, API design.
+    
+    \item \textbf{Chapter 5: Methodology} - Development approach, technology stack, implementation strategy, testing.
+    
+    \item \textbf{Chapter 6: Implementation and Results} - Implementation details, screenshots, performance analysis.
+    
+    \item \textbf{Chapter 7: Conclusion and Future Work} - Achievements, challenges, future enhancements.
+\end{itemize}
+
+The report concludes with references and appendices containing supplementary materials.

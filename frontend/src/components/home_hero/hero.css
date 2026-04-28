@@ -1,0 +1,46 @@
+.hero-section {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    padding: 50px 5% 0;
+    background-image: url('../../assets/images/hero_tech.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    background-color: #0a0a0a;
+}
+.hero-section h1 {
+    color: white;
+    font-size:50px;
+    width: 78%;
+    max-width: 700px;
+}
+.hero-section h3 {
+    color: #e0e0e0;
+    max-width: 700px;font-size: 30px;
+    width: 78%;
+}
+.hero-section button {
+    width: max-content;
+    padding: 10px 35px;
+    margin-right: 10px;
+}
+
+@media all and (max-width:900px) {
+    .hero-section  {
+        padding: 0 15px;
+    }
+    .hero-section h3 {
+        font-size: 14px;
+    }
+    .hero-section h1 {
+        font-size: 27px;
+    }
+    .hero-section button {
+        padding: 10px 25px;
+    }
+}
